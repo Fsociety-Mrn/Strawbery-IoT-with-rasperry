@@ -31,13 +31,10 @@ Moisture_2 = AnalogIn(ads, ADS.P1)
 # ********************** setup functions ********************** # 
 def setup():
     
-    # Create single-ended input on channel 0
-    chan = AnalogIn(ads, ADS.P0)
-    
     GPIO.setwarnings(False) 
-    GPIO.setmode(GPIO.BOARD)
+    if GPIO.getmode() == -1:
+        GPIO.setmode(GPIO.BOARD)
     
-
 
 # ********************** functions ********************** #  
 
@@ -56,12 +53,10 @@ def loop():
     
     print("M1: ",calcu_moisture(Moisture_1))
     print("M2: ",calcu_moisture(Moisture_2))
+    time.sleep(1)
     return loop()
 
 
 
 setup()
 loop()
-
-
-
