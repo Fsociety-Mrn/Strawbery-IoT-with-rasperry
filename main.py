@@ -68,7 +68,7 @@ def calcu_moisture(moisture_sensor):
     moisture = (voltage - VOLTAGE_MIN) * \
                (MOISTURE_MAX - MOISTURE_MIN) / \
                (VOLTAGE_MAX - VOLTAGE_MIN) + MOISTURE_MIN
-    return float(moisture)
+    return round(float(moisture), 2) 
 
 # water level 
 # water pump
