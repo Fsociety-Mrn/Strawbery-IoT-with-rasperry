@@ -1,0 +1,11 @@
+/node_modules
+/Raspberry pi/Firebase/__pycache__
+/src
+/build
+/.env
+/check.py
+/__pycache__
+/test.py
+/requirements.txt
+/split.py
+/.vscode
