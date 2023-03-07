@@ -7,6 +7,8 @@ import time
 import board
 import busio
 import adafruit_ads1x15.ads1115 as ADS
+import Adafruit_DHT
+
 from adafruit_ads1x15.analog_in import AnalogIn
 
 # ********************************************************* Strawberry Backend ********************************************************* #
@@ -25,8 +27,14 @@ i2c = busio.I2C(board.SCL, board.SDA)
 # Create the ADC object using the I2C bus
 ads = ADS.ADS1115(i2c)
 
-Moisture_1 = AnalogIn(ads, ADS.P0)
-Moisture_2 = AnalogIn(ads, ADS.P1)
+# ********************** Pin Configuration ********************** #
+
+Moisture_1 = AnalogIn(ads, ADS.P0) # A0
+Moisture_2 = AnalogIn(ads, ADS.P1) # A1
+Humid = 4
+
+# *********************** for humidity *********************** #
+sensor = Adafruit_DHT.DHT22
 
 # ********************** setup functions ********************** # 
 def setup():
@@ -38,6 +46,21 @@ def setup():
 
 # ********************** functions ********************** #  
 
+# Humidity / Temperature celcius
+def Humidity():
+
+    humidity, temperature = Adafruit_DHT.read_retry(sensor, Humid)
+
+    if humidity is not None:
+    
+        temp = float('%.1f'%(temperature))
+        return str('%.1f'%((((temp - 32) * 5 )/ 9)*0.1)) + "°C"
+    #     firebaseUpdateChild("Humid","Humidity",str('%.1f'%((((temp - 32) * 5 )/ 9)*0.1)) + "°C")
+
+    # else:
+    #     firebaseUpdateChild("Humid","Humidity","unable to read")
+        
+# soil moisture
 def calcu_moisture(moisture_sensor):
     voltage = moisture_sensor.voltage
 
@@ -47,10 +70,12 @@ def calcu_moisture(moisture_sensor):
                (VOLTAGE_MAX - VOLTAGE_MIN) + MOISTURE_MIN
     return float(moisture)
 
+# water level 
+# water pump
 
 # ********************** loop function ********************** #
 def loop():
-    
+    print("Temperatyre: " + Humidity())
     print("M1: ",calcu_moisture(Moisture_1))
     print("M2: ",calcu_moisture(Moisture_2))
     time.sleep(1)
