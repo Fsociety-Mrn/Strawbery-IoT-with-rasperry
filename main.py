@@ -5,7 +5,6 @@ import board
 import busio
 import adafruit_ads1x15.ads1115 as ADS
 import Adafruit_DHT
-
 import threading
 
 
@@ -37,7 +36,7 @@ Humid = 4 							# GPIO4
 Trigger = 17                    	# GPIO17
 Echo = 27							# GPIO27
 FloatSwitch = 23 					# GPIO23
-
+WaterPump = 24                      # GPIO24
 # *********************** for humidity *********************** #
 sensor = Adafruit_DHT.DHT22
 # ********************** setup functions ********************** # 
@@ -53,6 +52,9 @@ def setup():
     
     # Floatswitch
     GPIO.setup(FloatSwitch,GPIO.IN)
+    
+    # WaterPump
+    GPIO.setup(WaterPump,GPIO.OUT)
 
 # ********************** functions ********************** #  
 
@@ -64,30 +66,24 @@ def Humidity():
     if humidity is not None:
     
         temp = float('%.1f'%(temperature))
-        return str('%.1f'%((((temp - 32) * 5 )/ 9)*0.1)) + "°C"
+        firebaseUpdateChild("Humidity","data",str('%.1f'%((((temp - 32) * 5 )/ 9)*0.1)) + "°C")
+    else:
+        firebaseUpdateChild("Humidity","data","unable to read")
 
         
 # soil moisture
-def calcu_moisture(moisture_sensor):
+def calcu_moisture(Moisture_,moisture_sensor):
     voltage = moisture_sensor.voltage
 
     # Convert the voltage to a moisture value using linear interpolation
     moisture = (voltage - VOLTAGE_MIN) * \
                (MOISTURE_MAX - MOISTURE_MIN) / \
                (VOLTAGE_MAX - VOLTAGE_MIN) + MOISTURE_MIN
-    return round(float(moisture), 2) 
+               
+    firebaseUpdateChild(Moisture_,"data",round(float(moisture), 2))
+
 
 # water level
-
-def UltrasonicSensor():
-    try: 
-        Arduino.flush()
-        data = Arduino.readline().decode('utf-8').rstrip()
-        time.sleep(0.4)
-        return data
-    except:
-        return "Error Serial Communication"
-
 def waterLevel():
     GPIO.output(Trigger, GPIO.LOW)
     GPIO.output(Trigger, GPIO.HIGH)
@@ -113,24 +109,28 @@ def waterLevel():
     pulse_duration = StopTime - StartTime    
     
     cm = round(pulse_duration * 17150, 2)
-    inches = int(cm / 2.54);
+    inches = int(cm / 2.54)
     percent = int(inches*100/8)
     percent = 100 - percent
     
     #print(inches)
-    print(GPIO.input(FloatSwitch))
+    if (GPIO.input(FloatSwitch)):
+        firebaseUpdateChild("waterLevel","data","100%")
+    else:
+        firebaseUpdateChild("waterLevel","data",str(inches) + " inch")
     
 # water pump
+def waterPump():
+    GPIO.output(WaterPump,firebaseReadChild("waterPump","data"))
 
 # ********************** loop function ********************** #
 def loop():
-    #print("Temperatyre: " + Humidity())
-    print("M1: ",calcu_moisture(Moisture_1))
-    #print("M2: ",calcu_moisture(Moisture_2))
-    #print("Water Level: inch ", waterLevel())
-    
-    waterLevel()
-    time.sleep(0.5)
+
+    threading.Thread(target=Humidity, args=()).start()
+    threading.Thread(target=calcu_moisture, args=("Moisture 1",Moisture_1)).start()
+    threading.Thread(target=calcu_moisture, args=("Moisture 2",Moisture_2)).start()
+    threading.Thread(target=waterLevel, args=()).start()
+    threading.Thread(target=waterPump, args=()).start()
    
     return loop()
 

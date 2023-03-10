@@ -4,13 +4,12 @@ import requests
 
 timeout = 1
 
-
 # firebase API keys
 config = {
-  "apiKey": os.environ.get("apiKey"),
-  "authDomain": os.environ.get("authDomain"),
-  "databaseURL": "https://cognate-3-default-rtdb.asia-southeast1.firebasedatabase.app",
-  "storageBucket": os.environ.get("storageBucket")
+  "apiKey": "AIzaSyBjFnYlg8HoQgz6r3_7d7hhX3buuw3oZTI",
+  "authDomain": "cognate-ii.firebaseapp.com",
+  "databaseURL": "https://cognate-ii-default-rtdb.asia-southeast1.firebasedatabase.app",
+  "storageBucket": "cognate-ii.appspot.com"
 }
 firebase = pyrebase.initialize_app(config)
 db = firebase.database() #realTime database
@@ -58,3 +57,4 @@ def firebaseUpdateChild(keyName,keyChild,value):
 # create data
 def firebaseCreate(keyName, value):
     return db.child(keyName).set(value)
+
