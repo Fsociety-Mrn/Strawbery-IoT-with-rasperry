@@ -80,44 +80,35 @@ def calcu_moisture(Moisture_,moisture_sensor):
                (MOISTURE_MAX - MOISTURE_MIN) / \
                (VOLTAGE_MAX - VOLTAGE_MIN) + MOISTURE_MIN
                
-    firebaseUpdateChild(Moisture_,"data",round(float(moisture), 2))
+    firebaseUpdateChild(Moisture_,"data",str(round(float(moisture), 2)))
+
 
 
 # water level
 def waterLevel():
-    GPIO.output(Trigger, GPIO.LOW)
-    GPIO.output(Trigger, GPIO.HIGH)
-    
-    time.sleep(0.00001)
-    
-    GPIO.output(Trigger, GPIO.LOW)
-
-    StartTime = time.time()
-    StopTime = time.time()
-     
-    
-    # save StartTime
-    while GPIO.input(Echo) == 0:
-        StartTime = time.time()
-    
-    
-    # save time of arrival
-    while GPIO.input(Echo) == 1:
-        StopTime = time.time()
- 
-    # time difference between start and arrival
-    pulse_duration = StopTime - StartTime    
-    
-    cm = round(pulse_duration * 17150, 2)
-    inches = int(cm / 2.54)
-    percent = int(inches*100/8)
-    percent = 100 - percent
-    
-    #print(inches)
-    if (GPIO.input(FloatSwitch)):
+    if not GPIO.input(FloatSwitch):
         firebaseUpdateChild("waterLevel","data","100%")
     else:
+        
+        GPIO.output(Trigger, False)
+        time.sleep(0.5)
+
+        GPIO.output(Trigger, True)
+        time.sleep(0.00001)
+        GPIO.output(Trigger, False)
+
+        pulse_start, pulse_end = 0, 0
+        while GPIO.input(Echo) == 0:
+            pulse_start = time.time()
+
+        while GPIO.input(Echo) == 1:
+            pulse_end = time.time()
+
+        distance = (pulse_end - pulse_start) * 17150
+        inches = round(distance / 2.54, 1)
+        print(inches)
         firebaseUpdateChild("waterLevel","data",str(inches) + " inch")
+    
     
 # water pump
 def waterPump():
@@ -130,10 +121,10 @@ def loop():
     threading.Thread(target=Humidity, args=()).start()
     
     # Moisture 1
-    threading.Thread(target=calcu_moisture, args=("Moisture 1",Moisture_1)).start()
+    calcu_moisture("Moisture 1",Moisture_1)
     
     # Moisture 2
-    threading.Thread(target=calcu_moisture, args=("Moisture 2",Moisture_2)).start()
+    calcu_moisture("Moisture 2",Moisture_2)
     
     # water level
     threading.Thread(target=waterLevel, args=()).start()
@@ -147,4 +138,5 @@ def loop():
 
 setup()
 loop()
+
 
