@@ -126,10 +126,19 @@ def waterPump():
 # ********************** loop function ********************** #
 def loop():
 
+    # Humidity
     threading.Thread(target=Humidity, args=()).start()
+    
+    # Moisture 1
     threading.Thread(target=calcu_moisture, args=("Moisture 1",Moisture_1)).start()
+    
+    # Moisture 2
     threading.Thread(target=calcu_moisture, args=("Moisture 2",Moisture_2)).start()
+    
+    # water level
     threading.Thread(target=waterLevel, args=()).start()
+    
+    # water pump
     threading.Thread(target=waterPump, args=()).start()
    
     return loop()
