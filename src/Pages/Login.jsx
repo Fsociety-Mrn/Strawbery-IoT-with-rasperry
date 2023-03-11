@@ -6,7 +6,8 @@ import {
   Stack 
 } from '@mui/material'
 import { LoginTextbox } from '../Components/CustomTextfield'
-import { useNavigate } from 'react-router-dom'
+import { LoginStraw } from '../Authentication/LoginFirebase'
+
 // icons
 import LOGO2 from '../Images/logoText-transformed.png'
 
@@ -23,7 +24,37 @@ const Login = () => {
 }
 
 const MobileView = () => {
-  let navigate = useNavigate();
+
+
+  // Initialize variables
+
+  const [error, setError] = React.useState({
+    error: false,
+    errorMessage: ""
+  })
+
+  // email and password
+  const [user, setUser] = React.useState({
+    email : "",
+    password : ""
+  })
+
+  const loginButton = async () => {
+
+    const data = await LoginStraw(user)
+
+    setError({
+      error: data,
+      errorMessage: data ? "Invalid Email and Password" : "",
+    });
+
+    if (!data) {
+      window.location.reload(false);
+    }
+    
+   
+  }
+
   return(
     <div>
       <Grid
@@ -62,10 +93,10 @@ const MobileView = () => {
     {/* Email and Username*/} 
         <LoginTextbox 
         type='email'
-        // error={error.email}
+        error={error.error}
         // helperText={error.emailMessage}
-        // value={user.email}
-        // onChange={emailChanged}
+        value={user.email}
+        onChange={e=>setUser({...user, email: e.target.value})}
         fullWidth 
         margin='normal' 
         placeholder='Email'
@@ -73,10 +104,10 @@ const MobileView = () => {
 
         <LoginTextbox
         type='password' 
-        // error={error.password}
-        // helperText={error.passwordMessage}
-        // value={user.password}
-        // onChange={passwordChanged}
+        error={error.error}
+        helperText={error.errorMessage}
+        value={user.password}
+        onChange={e=>setUser({...user, password: e.target.value})}
         fullWidth 
         margin='normal' 
         placeholder='Password'/> 
@@ -94,7 +125,7 @@ const MobileView = () => {
           style={{
             width:"300px"
           }}
-          onClick={()=>navigate("/Mainpage")}
+          onClick={loginButton}
           >Login</Button>
 
         </Stack>
