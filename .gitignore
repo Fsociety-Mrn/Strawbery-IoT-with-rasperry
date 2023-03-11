@@ -1,1 +1,5 @@
 /node_modules
+/Firebase
+/.env
+/build
+/node_modules
