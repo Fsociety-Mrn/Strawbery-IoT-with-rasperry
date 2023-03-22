@@ -1,4 +1,4 @@
-import { Grid, Paper, Switch, Typography } from '@mui/material'
+import { Button, Grid, Paper, Switch, Typography } from '@mui/material'
 import { Stack } from '@mui/system'
 import React from 'react'
 
@@ -8,11 +8,13 @@ import { onValue, ref } from 'firebase/database';
 
 // icons
 import LOGO2 from '../Images/logoText-transformed.png'
+import ICON from '../Images/Logo-modified.png'
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import LandslideIcon from '@mui/icons-material/Landslide';
 import OilBarrelIcon from '@mui/icons-material/OilBarrel';
 import ShowerIcon from '@mui/icons-material/Shower';
 
+import PushNotification  from 'react-push-notification';
 
 const formatDateTime = (dateTime) => {
     const options = {
@@ -21,8 +23,6 @@ const formatDateTime = (dateTime) => {
         month: "short",
         day: "numeric",
         year: "numeric",
-        hour: "numeric",
-        minute: "numeric",
        
       };
       const date = dateTime.toLocaleDateString("en-US", options)
@@ -202,6 +202,21 @@ const Mainpage = () => {
           data: !waterPump
         });
       }
+
+    const textMessages = () => {
+        Notification.requestPermission().then(
+            perm => {
+                if (perm === "granted"){
+                    new Notification("Strawberry: IoT with Raspberry", {
+                        body: " this is hello world",
+                        icon: ICON
+                    })
+                }
+            }
+        )
+    }
+    
+
   return (
     <div>
 
@@ -215,6 +230,60 @@ const Mainpage = () => {
         spacing={1}
         padding={1}
         >
+
+        {/* Account Settings */}
+            <Grid item xs={12} sm={12} md={4}>
+                <Paper elevation={0} sx={{
+                    backgroundColor: "WHITE",
+                    border: '2px solid #B25F5B'
+                    }}
+                >
+                    <Grid
+                    container
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    padding={2}
+                    >  
+                        <Grid item xs={12} md={12}>
+                            <Typography
+                            variant="h6"
+                            textAlign='center'
+                            color='#000000'>
+                                Acc Settings
+                            </Typography>
+
+                        </Grid>
+                            <Grid item xs={12} md={12}>
+                                <Stack
+                                direction="row"
+                                justifyContent="center"
+                                alignItems="center"
+                                spacing={2}>
+                                    
+                                    <Button 
+                                    variant='text' 
+                                    color='secondary' 
+                                    style={{
+                                      width:"300px"
+                                    }}
+                                    startIcon={
+                                        <ThermostatIcon 
+                                        fontSize="large" 
+                                        sx={{ color: '#000000' }}
+                                        />
+                                    }
+                                    onClick={textMessages}
+                                    >Settings</Button>
+
+                                </Stack>
+                            </Grid>
+
+                        </Grid>
+                </Paper>
+
+            </Grid>
+
 
         {/* Temnperature */}
             <Grid item xs={12} sm={12} md={4}>
