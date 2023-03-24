@@ -14,7 +14,6 @@ import LandslideIcon from '@mui/icons-material/Landslide';
 import OilBarrelIcon from '@mui/icons-material/OilBarrel';
 import ShowerIcon from '@mui/icons-material/Shower';
 
-import PushNotification  from 'react-push-notification';
 
 const formatDateTime = (dateTime) => {
     const options = {
@@ -204,16 +203,7 @@ const Mainpage = () => {
       }
 
     const textMessages = () => {
-        Notification.requestPermission().then(
-            perm => {
-                if (perm === "granted"){
-                    new Notification("Strawberry: IoT with Raspberry", {
-                        body: " this is hello world",
-                        icon: ICON
-                    })
-                }
-            }
-        )
+        alert('Button clicked!');
     }
     
 
@@ -232,6 +222,7 @@ const Mainpage = () => {
         >
 
         {/* Account Settings */}
+    {/*
             <Grid item xs={12} sm={12} md={4}>
                 <Paper elevation={0} sx={{
                     backgroundColor: "WHITE",
@@ -284,7 +275,8 @@ const Mainpage = () => {
 
             </Grid>
 
-
+        */}
+        
         {/* Temnperature */}
             <Grid item xs={12} sm={12} md={4}>
                 <Paper elevation={0} sx={{
