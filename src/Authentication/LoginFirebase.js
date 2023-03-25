@@ -1,5 +1,6 @@
 import { 
-    browserSessionPersistence,
+    // browserSessionPersistence,
+    inMemoryPersistence,
     getAuth, 
     onAuthStateChanged, 
     setPersistence, 
@@ -14,13 +15,14 @@ const auth = getAuth(app)
 
 // Login
 export const LoginStraw = async (user) => {
-    const login = await setPersistence(auth, browserSessionPersistence)
+    const login = await setPersistence(auth, inMemoryPersistence)
     .then(async () =>{
 
         return await signInWithEmailAndPassword(auth, user.email, user.password)
         .then(
             userdata=> {
-                sessionStorage.setItem('TOKEN',userdata._tokenResponse.refreshToken )
+                localStorage.setItem('TOKEN',userdata._tokenResponse.refreshToken )
+                
                 return false
             }
         )

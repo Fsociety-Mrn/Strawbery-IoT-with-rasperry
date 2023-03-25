@@ -1,148 +1,21 @@
-import { Button, Grid, Paper, Switch, Typography } from '@mui/material'
+import { Grid, Paper, Switch, Typography } from '@mui/material'
 import { Stack } from '@mui/system'
 import React from 'react'
+import { DesktopView, MobileView} from '../Components/CustomDate'
+import axios from 'axios';
 
 // firebase
 import { database, updateReal} from '../firebase/firebase_real'
 import { onValue, ref } from 'firebase/database';
 
 // icons
-import LOGO2 from '../Images/logoText-transformed.png'
+
 import ICON from '../Images/Logo-modified.png'
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import LandslideIcon from '@mui/icons-material/Landslide';
 import OilBarrelIcon from '@mui/icons-material/OilBarrel';
 import ShowerIcon from '@mui/icons-material/Shower';
 
-
-const formatDateTime = (dateTime) => {
-    const options = {
-        timeZone: "Asia/Manila",
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-       
-      };
-      const date = dateTime.toLocaleDateString("en-US", options)
-      const timeOptions = {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      };
-      const timeString = dateTime.toLocaleTimeString("en-US", timeOptions);
-      return {
-        date,
-        timeString,
-      };
-}
-
-const MobileView = () => {
-
-    const [time, setTime] = React.useState(new Date());
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-          setTime(new Date());
-        }, 1000);
-        return () => clearInterval(interval);
-      }, []);
-    
-      const { date, timeString } = formatDateTime(time);
-    return (
-        <Grid
-        container
-        direction="row"
-        justifyContent="center"
-        alignItems="center"
-        spacing={1}
-        padding={1}
-        >
-            {/* Logo */}
-                <Grid item xs={12} sm={12} >
-                    <Stack
-                    direction="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    >
-                        <img
-                        alt='logo'
-                        src={LOGO2}
-                        style={{
-                            width: '130px',
-                            height: '130px'
-                        }}
-                        />
-                    </Stack>
-                </Grid>
-    
-            {/* Clock */}
-                <Grid item xs={12} sm={12} >
-                    <Stack
-                    direction="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    >
-                        <Typography mt={2} fontFamily='sans-serif' fontSize='60px' variant="h1" component="h2" textAlign='center'> {timeString}</Typography>
-                        <Typography  fontFamily='sans-serif' fontSize='20px' variant="caption" component="body"> {date}</Typography>
-                    </Stack>
-                </Grid>
-        </Grid>
-    )
-}
-
-const DesktopView = () => {
-
-    const [time, setTime] = React.useState(new Date());
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-          setTime(new Date());
-        }, 1000);
-        return () => clearInterval(interval);
-      }, []);
-    
-      const { date, timeString } = formatDateTime(time);
-
-    return(
-        <Grid
-        container
-        direction="row"
-        justifyContent="center"
-        alignItems="center"
-        spacing={1}
-        padding={1}
-        >
-        {/* Logo */}
-            <Grid item xs={12} sm={12} md={5}>
-                    <Stack
-                    direction="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    >
-                        <img
-                        alt='logo'
-                        src={LOGO2}
-                        style={{
-                            width: '300px',
-                            height: '300px'
-                        }}
-                        />
-                    </Stack>
-                </Grid>
-    
-            {/* Clock */}
-                <Grid item xs={12} sm={12} md={5}>
-                    <Stack
-                    direction="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    >
-                        <Typography mt={2} fontFamily='sans-serif' variant="h1" component="h2" textAlign='center'> {timeString}</Typography>
-                        <Typography  fontFamily='sans-serif' fontSize='30px' variant="caption" component="body"> {date}</Typography>
-                    </Stack>
-                </Grid>
-        </Grid>
-    )
-}
 
 const Mainpage = () => {
     const [state, setState] = React.useState(false);
@@ -154,6 +27,10 @@ const Mainpage = () => {
     const [waterLevel, setWaterLevel] = React.useState("")
     const [waterPump, setWaterPump] = React.useState(Boolean)
 
+    let tempValue = "N/A";
+    let moisture1Value = "N/A";
+    let moisture2Value = "N/A";
+    let waterLevelValue = "N/A"
 
     React.useEffect(()=>{
         const setResponsiveness = () => {
@@ -163,34 +40,58 @@ const Mainpage = () => {
         setResponsiveness();
         window.addEventListener("resize", () => setResponsiveness());
 
+        
+   
 
         // Temperature
         onValue(ref(database , '/Humidity'), e => {
             setTemp(()=>e.child("data").val()) 
+            tempValue = e.child("data").val()
         })
-
+        
         // Moisture 1
         onValue(ref(database , '/Moisture 1'), e => {
             setMoisture_1(()=>e.child("data").val()) 
+            moisture1Value = e.child("data").val()
         })
 
         // Moisture 2
         onValue(ref(database , '/Moisture 2'), e => {
             setMoisture_2(()=>e.child("data").val()) 
+            moisture2Value = e.child("data").val()
         })  
         
         // Water Level
         onValue(ref(database , '/waterLevel'), e => {
             setWaterLevel(()=>e.child("data").val()) 
+            waterLevelValue = e.child("data").val()
         })
 
         // Water Pump
         onValue(ref(database , '/waterPump'), e => {
             setWaterPump(()=>e.child("data").val()) 
         })        
-  
+        
+        // Notification
+        
+        const interval = setInterval(() => {
+            textMessages();
+            Notification.requestPermission().then(per=>{
+                if (per==="granted"){
+                    new Notification("Strawberry: IoT with raspberry",{
+                        body: "Temperature: "+ tempValue + "\n\n" +
+                                "Soil Moisture: M1: "+ moisture1Value+" M2 "+moisture2Value+" \n\n"+
+                                "Water Level: " + waterLevelValue + "\n\n\n" + 
+                                "We will notify you again in 15 seconds.",
+                        icon: ICON,
+                        tag: "Strawberry"
+                    })
+                }
+            })
+          }, 15000);
     
         return () => {
+        clearInterval(interval);
           window.removeEventListener("resize", () => setResponsiveness());
         };
     },[])
@@ -201,14 +102,42 @@ const Mainpage = () => {
           data: !waterPump
         });
       }
+    
+    // send notification to telegram bot
+    const textMessages = async () => {
 
-    const textMessages = () => {
-        alert('Button clicked!');
+        await axios.post(`https://api.telegram.org/bot${process.env.REACT_APP_BOT_TOKEN}/sendMessage`, {
+              chat_id: process.env.REACT_APP_CHAT_ID_MrRobot,
+              
+              text: "Strawberry: IoT with raspberry\n\n\nTemperature: "+ tempValue + "\n" +
+              "Soil Moisture: M1: "+ moisture1Value+" M2 "+moisture2Value+" \n"+
+              "Water Level: " + waterLevelValue + "\n\n\n" + 
+              "We will notify you again in 30 minutes.",
+            },{
+              headers: {
+                'Content-Type': 'application/json',
+                'cache-control': 'no-cache'
+              }})
+            .then(respons => console.log(respons.data))
+            .catch(error=>console.error(error));
+      
+        // ======== code for get the responses messages ======== //
+
+        // Replace <your-bot-token> with your actual bot token
+        // await axios.get(`https://api.telegram.org/bot${process.env.REACT_APP_BOT_TOKEN}/getUpdates`)
+        //     .then(response => {
+        //         const chatId = response.data.result[1].message.chat.id;
+        //             console.log(chatId);
+        //     })
+        //     .catch(error => {
+        //     console.log(error);
+        //     });
+
     }
     
 
   return (
-    <div>
+    <React.Fragment>
 
         {!state ? <DesktopView /> : <MobileView />}
 
@@ -221,62 +150,6 @@ const Mainpage = () => {
         padding={1}
         >
 
-        {/* Account Settings */}
-    {/*
-            <Grid item xs={12} sm={12} md={4}>
-                <Paper elevation={0} sx={{
-                    backgroundColor: "WHITE",
-                    border: '2px solid #B25F5B'
-                    }}
-                >
-                    <Grid
-                    container
-                    direction="row"
-                    justifyContent="center"
-                    alignItems="center"
-                    padding={2}
-                    >  
-                        <Grid item xs={12} md={12}>
-                            <Typography
-                            variant="h6"
-                            textAlign='center'
-                            color='#000000'>
-                                Acc Settings
-                            </Typography>
-
-                        </Grid>
-                            <Grid item xs={12} md={12}>
-                                <Stack
-                                direction="row"
-                                justifyContent="center"
-                                alignItems="center"
-                                spacing={2}>
-                                    
-                                    <Button 
-                                    variant='text' 
-                                    color='secondary' 
-                                    style={{
-                                      width:"300px"
-                                    }}
-                                    startIcon={
-                                        <ThermostatIcon 
-                                        fontSize="large" 
-                                        sx={{ color: '#000000' }}
-                                        />
-                                    }
-                                    onClick={textMessages}
-                                    >Settings</Button>
-
-                                </Stack>
-                            </Grid>
-
-                        </Grid>
-                </Paper>
-
-            </Grid>
-
-        */}
-        
         {/* Temnperature */}
             <Grid item xs={12} sm={12} md={4}>
                 <Paper elevation={0} sx={{
@@ -469,7 +342,7 @@ const Mainpage = () => {
   
         </Grid>
 
-    </div>
+    </React.Fragment>
   )
 }
 
