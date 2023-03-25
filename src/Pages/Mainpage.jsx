@@ -107,7 +107,7 @@ const Mainpage = () => {
     const textMessages = async () => {
 
         await axios.post(`https://api.telegram.org/bot${process.env.REACT_APP_BOT_TOKEN}/sendMessage`, {
-              chat_id: process.env.REACT_APP_CHAT_ID_MrRobot,
+              chat_id: process.env.REACT_APP_CHAT_ID_REY,
               
               text: "Strawberry: IoT with raspberry\n\n\nTemperature: "+ tempValue + "\n" +
               "Soil Moisture: M1: "+ moisture1Value+" M2 "+moisture2Value+" \n"+
