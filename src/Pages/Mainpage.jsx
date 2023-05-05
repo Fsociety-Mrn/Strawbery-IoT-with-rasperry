@@ -15,6 +15,7 @@ import ThermostatIcon from '@mui/icons-material/Thermostat';
 import LandslideIcon from '@mui/icons-material/Landslide';
 import OilBarrelIcon from '@mui/icons-material/OilBarrel';
 import ShowerIcon from '@mui/icons-material/Shower';
+import ColorizeIcon from '@mui/icons-material/Colorize';
 
 
 const Mainpage = () => {
@@ -26,11 +27,14 @@ const Mainpage = () => {
     const [moisture_2, setMoisture_2] = React.useState("")
     const [waterLevel, setWaterLevel] = React.useState("")
     const [waterPump, setWaterPump] = React.useState(Boolean)
+    const [phLevel, setPhLevel] = React.useState("")
+    const [sprayPump, setSprayPump] = React.useState(Boolean)
 
     let tempValue = "N/A";
     let moisture1Value = "N/A";
     let moisture2Value = "N/A";
     let waterLevelValue = "N/A"
+    let phLevelValue = "N/A"
 
     React.useEffect(()=>{
         const setResponsiveness = () => {
@@ -40,8 +44,6 @@ const Mainpage = () => {
         setResponsiveness();
         window.addEventListener("resize", () => setResponsiveness());
 
-        
-   
 
         // Temperature
         onValue(ref(database , '/Humidity'), e => {
@@ -70,7 +72,18 @@ const Mainpage = () => {
         // Water Pump
         onValue(ref(database , '/waterPump'), e => {
             setWaterPump(()=>e.child("data").val()) 
-        })        
+        })   
+        
+        // Ph level
+        onValue(ref(database , '/phLevel'), e => {
+            setPhLevel(()=>e.child("data").val()) 
+            phLevelValue = e.child("data").val()
+        })          
+        
+        // Spray Pump
+        onValue(ref(database , '/sprayPump'), e => {
+            setSprayPump(()=>e.child("data").val()) 
+        })  
         
         // Notification
         
@@ -81,7 +94,8 @@ const Mainpage = () => {
                     new Notification("Strawberry: IoT with raspberry",{
                         body: "Temperature: "+ tempValue + "\n\n" +
                                 "Soil Moisture: M1: "+ moisture1Value+" M2 "+moisture2Value+" \n\n"+
-                                "Water Level: " + waterLevelValue + "\n\n\n" + 
+                                "Water Level: " + waterLevelValue + "\n\n" + 
+                                "PH Level: " + phLevelValue + "\n\n\n" + 
                                 "We will notify you again in 15 seconds.",
                         icon: ICON,
                         tag: "Strawberry"
@@ -102,6 +116,13 @@ const Mainpage = () => {
           data: !waterPump
         });
       }
+
+    const sprayPumpF = () =>{
+        updateReal("sprayPump",{
+          data: !sprayPump
+        });
+      }
+
     
     // send notification to telegram bot
     const textMessages = async () => {
@@ -110,7 +131,7 @@ const Mainpage = () => {
               chat_id: process.env.REACT_APP_CHAT_ID_REY,
               
               text: "Strawberry: IoT with raspberry\n\n\nTemperature: "+ tempValue + "\n" +
-              "Soil Moisture: M1: "+ moisture1Value+" M2 "+moisture2Value+" \n"+
+              "Soil Moisture: M1: "+ moisture1Value+" M2 "+ moisture2Value+" \n"+
               "Water Level: " + waterLevelValue + "\n\n\n" + 
               "We will notify you again in 30 minutes.",
             },{
@@ -339,7 +360,94 @@ const Mainpage = () => {
                 </Paper>
             </Grid>            
 
-  
+        {/* Ph level */}
+            <Grid item xs={12} sm={12} md={4}>
+                <Paper elevation={0} sx={{
+                    backgroundColor: "WHITE",
+                    border: '2px solid #B25F5B'
+                    }}
+                >
+                    <Grid
+                    container
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    padding={2}
+                    >  
+                        <Grid item xs={12} md={12}>
+                            <Typography
+                            variant="h6"
+                            textAlign='center'
+                            color='#000000'>
+                                PH level
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={12} md={12}>
+                            <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            spacing={2}>
+                                <ColorizeIcon fontSize="large" sx={{ color: '#000000' }}/>
+                                
+                                <Typography
+                                variant="h4"
+                                textAlign='center'
+                                color='#000000'>
+                                {phLevel}
+                                </Typography>
+                            </Stack>
+                        </Grid>
+
+                    </Grid>
+                </Paper>
+            </Grid>          
+
+        {/* Spray pump */}
+            <Grid item xs={12} sm={12} md={4}>
+                <Paper elevation={0} sx={{
+                    backgroundColor: "WHITE",
+                    border: '2px solid #B25F5B'
+                    }}
+                >
+                    <Grid
+                    container
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    padding={2}
+                    >  
+                        <Grid item xs={12} md={12}>
+                            <Typography
+                            variant="h6"
+                            textAlign='center'
+                            color='#000000'>
+                                Spray pump
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={12} md={12}>
+                            <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            spacing={2}>
+                                <ShowerIcon fontSize="large" sx={{ color: '#000000' }}/>
+
+                                <Switch
+                                checked={sprayPump}
+                                onChange={sprayPumpF}
+                                // inputProps={{ 'aria-label': 'controlled' }}
+                                style={{ color: '#000000' }}
+                                />
+                            </Stack>
+                        </Grid>
+
+                    </Grid>
+                </Paper>
+            </Grid>          
+
         </Grid>
 
     </React.Fragment>
