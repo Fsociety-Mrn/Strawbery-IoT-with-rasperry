@@ -1,6 +1,8 @@
-import { Grid, Stack, Typography } from '@mui/material';
+import { Grid, IconButton, Stack, Typography } from '@mui/material';
 import React from 'react'
+import {LogoutStraw} from '../Authentication/LoginFirebase'
 
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import LOGO2 from '../Images/logoText-transformed.png'
 
 // format date
@@ -47,6 +49,25 @@ export const MobileView = () => {
         spacing={1}
         padding={1}
         >
+
+            {/* Log out */}
+            <Grid 
+            container
+            direction="row"
+            justifyContent="flex-end"
+            alignItems="center"
+            padding={1}
+            >
+                <IconButton color="primary" size='large' 
+                onClick={()=>{
+                    LogoutStraw();
+                    window.location.reload(true);
+                }}>
+                    <PowerSettingsNewIcon sx={{ fontSize: 30 }} />
+                </IconButton>
+
+            </Grid>
+
             {/* Logo */}
                 <Grid item xs={12} sm={12} >
                     <Stack
@@ -102,6 +123,25 @@ export const DesktopView = () => {
         spacing={1}
         padding={1}
         >
+
+        {/* Log out */}
+            <Grid 
+            container
+            direction="row"
+            justifyContent="flex-end"
+            alignItems="center"
+            padding={1}
+            >
+                <IconButton color="primary" size='large'                 
+                onClick={()=>{
+                    LogoutStraw();
+                    window.location.reload(true);
+                }}>
+                    <PowerSettingsNewIcon sx={{ fontSize: 35 }} />
+                </IconButton>
+
+            </Grid>
+
         {/* Logo */}
             <Grid item xs={12} sm={12} md={5}>
                     <Stack

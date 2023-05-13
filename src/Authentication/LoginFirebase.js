@@ -37,10 +37,12 @@ export const LoginStraw = async (user) => {
 
 // Logout
 export const LogoutStraw = async () => {
-    await signOut(auth)
+    await signOut(auth).then(()=>{
+        console.log("Succesfull signout")
+    }).catch((err)=>console.log(err))
     
     // console.log(sessionStorage.getItem('key'))
-    return sessionStorage.clear();
+    return localStorage.clear();
   
 }
 
