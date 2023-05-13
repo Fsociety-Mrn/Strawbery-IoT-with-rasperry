@@ -32,11 +32,13 @@ ads = ADS.ADS1115(i2c)
 
 Moisture_1 = AnalogIn(ads, ADS.P0)  # A0
 Moisture_2 = AnalogIn(ads, ADS.P1)  # A1
+phLevel = AnalogIn(ads, ADS.P2)     # A2 
 Humid = 4 							# GPIO4
 Trigger = 17                    	# GPIO17
 Echo = 27							# GPIO27
 FloatSwitch = 23 					# GPIO23
 WaterPump = 24                      # GPIO24
+SprayPump = 25                      # GPIO25
 # *********************** for humidity *********************** #
 sensor = Adafruit_DHT.DHT22
 # ********************** setup functions ********************** # 
@@ -55,6 +57,9 @@ def setup():
     
     # WaterPump
     GPIO.setup(WaterPump,GPIO.OUT)
+    
+    # SprayPump
+    GPIO.setup(SprayPump,GPIO.OUT)
 
 # ********************** functions ********************** #  
 
@@ -76,16 +81,17 @@ def calcu_moisture(Moisture_,moisture_sensor):
     voltage = moisture_sensor.voltage
 
     # Convert the voltage to a moisture value using linear interpolation
-    moisture = (voltage - VOLTAGE_MIN) * \
-               (MOISTURE_MAX - MOISTURE_MIN) / \
-               (VOLTAGE_MAX - VOLTAGE_MIN) + MOISTURE_MIN
+    moisture = (voltage - VOLTAGE_MIN) * (MOISTURE_MAX - MOISTURE_MIN) / (VOLTAGE_MAX - VOLTAGE_MIN) + MOISTURE_MIN
+    
+    percentage = int(moisture*100/68)
                
-    firebaseUpdateChild(Moisture_,"data",str(round(float(moisture), 2)))
+    firebaseUpdateChild(Moisture_,"data",str(100-percentage) + "%")
 
 
 
 # water level
 def waterLevel():
+    # print(GPIO.input(FloatSwitch))
     if not GPIO.input(FloatSwitch):
         firebaseUpdateChild("waterLevel","data","100%")
     else:
@@ -106,7 +112,7 @@ def waterLevel():
 
         distance = (pulse_end - pulse_start) * 17150
         inches = round(distance / 2.54, 1)
-        print(inches)
+        # print(inches)
         firebaseUpdateChild("waterLevel","data",str(inches) + " inch")
     
     
@@ -114,11 +120,18 @@ def waterLevel():
 def waterPump():
     GPIO.output(WaterPump,firebaseReadChild("waterPump","data"))
 
+# ph level 
+def phLevelSensor():
+    voltage = phLevel.voltage
+    pH = 7 - ((voltage - 3.05) / 0.18)
+    print("pH level:", round(pH, 2))
+    firebaseUpdateChild("phLevel","data",round(pH, 2))
+    
+def sprayPumpS():
+    GPIO.output(SprayPump,firebaseReadChild("sprayPump","data"))
+
 # ********************** loop function ********************** #
 def loop():
-
-    # Humidity
-    threading.Thread(target=Humidity, args=()).start()
     
     # Moisture 1
     calcu_moisture("Moisture 1",Moisture_1)
@@ -126,17 +139,25 @@ def loop():
     # Moisture 2
     calcu_moisture("Moisture 2",Moisture_2)
     
+    # ph level
+    phLevelSensor()
+    
     # water level
     threading.Thread(target=waterLevel, args=()).start()
     
     # water pump
     threading.Thread(target=waterPump, args=()).start()
+    
+    # spray pump
+    threading.Thread(target=sprayPumpS, args=()).start()
+    
+    # Humidity
+    threading.Thread(target=Humidity, args=()).start()
    
     return loop()
 
 
 
-# setup()
-# loop()
-
+setup()
+loop()
 
