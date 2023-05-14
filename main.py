@@ -112,8 +112,12 @@ def waterLevel():
 
         distance = (pulse_end - pulse_start) * 17150
         inches = round(distance / 2.54, 1)
+        
+        notFulltank = 9.8
+        percent = int(inches*100/notFulltank)
+        percent = 100 - percent
         # print(inches)
-        firebaseUpdateChild("waterLevel","data",str(inches) + " inch")
+        firebaseUpdateChild("waterLevel","data",str(percent) + " %")
     
     
 # water pump

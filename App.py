@@ -52,7 +52,9 @@ root.update_idletasks()  # Ensure window dimensions are updated
 center_window(root)
 
 
+# start this loop while the tkliner running
 main.setup()
 main.loop()
+
 # Start the main event loop
 root.mainloop()
