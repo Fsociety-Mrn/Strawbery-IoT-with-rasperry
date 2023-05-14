@@ -30,6 +30,15 @@ const Mainpage = () => {
     const [phLevel, setPhLevel] = React.useState("")
     const [sprayPump, setSprayPump] = React.useState(Boolean)
 
+    // data total
+    const [moisture,setMoisture] = React.useState({
+        "moistureTotal" : 0,
+        "message" : ""
+    })
+    const [tempe,setTempe] = React.useState("")
+    const [waterM,setWaterM] = React.useState("")
+    const [PHm,setPHm] = React.useState("")
+
     let tempValue = "N/A";
     let moisture1Value = "N/A";
     let moisture2Value = "N/A";
@@ -126,13 +135,80 @@ const Mainpage = () => {
     
     // send notification to telegram bot
     const textMessages = async () => {
+        
+        // soil moisture
+        let moistureTotal = (parseInt(moisture1Value.replace("%","")) + parseInt(moisture1Value.replace("%",""))) * 100 / 200
+
+        // soil moisture
+        let messageSoil;
+
+        if (moistureTotal >= 0 && moistureTotal <= 50) {
+            messageSoil = "The soil is dry due to low moisture levels.";
+        } else if (moistureTotal >= 51 && moistureTotal <= 70) {
+            messageSoil = "The soil moisture level is within the normal range.";
+        } else if (moistureTotal >= 71 && moistureTotal <= 100) {
+            messageSoil = "The soil moisture level is within the normal range.";
+        } else {
+            messageSoil = "Invalid soil moisture level.";
+        }
+
+        setMoisture({
+            moistureTotal :moistureTotal,
+            message: messageSoil
+        })       
+
+
+        // tenperatrue
+        let Temp = parseInt(tempValue.replace("°C",""))
+
+        let message = Temp >= 35
+            ? "The current Celsius temperature has reached"+ String(Temp)+", which may be too hot for your plants."
+            : "The current Celsius temperature is below +" + String(Temp)+", which is within the suitable range for your plants.";
+    
+        setTempe(message)
+
+        // water level
+        const waterLevel = 70; // Replace with actual water level percentage
+
+        let messageLevel;
+
+        if (waterLevel >= 91 && waterLevel <= 100) {
+            messageLevel = "The water level is at a full tank.";
+        } else if (waterLevel >= 61 && waterLevel <= 90) {
+            messageLevel = "The water level is within the normal range.";
+        } else if (waterLevel >= 25 && waterLevel <= 60) {
+            messageLevel = "The water level is low ).";
+        } else if (waterLevel === 25) {
+            messageLevel = "The water level is critical.";
+        } else {
+            messageLevel = "Invalid water level.";
+        }
+
+        setWaterM(messageLevel);
+
+        // PH level
+        const messagePH =
+            phLevelValue === 4 ? "Too much acidity, add some water." :
+            phLevelValue === 7 ? "Too much alkaline, add some solution." :
+            "pH level within acceptable range.";
+        
+        setPHm(messagePH)
 
         await axios.post(`https://api.telegram.org/bot${process.env.REACT_APP_BOT_TOKEN}/sendMessage`, {
               chat_id: process.env.REACT_APP_CHAT_ID_REY,
               
-              text: "Strawberry: IoT with raspberry\n\n\nTemperature: "+ tempValue + "\n" +
-              "Soil Moisture: M1: "+ moisture1Value+" M2 "+ moisture2Value+" \n"+
-              "Water Level: " + waterLevelValue + "\n\n\n" + 
+              text: "Strawberry: IoT with raspberry\n\n\n" + 
+              "Temperature: "+ tempValue + "\n" +
+              message + "\n\n" +
+              "Soil Moisture:"+ String(moistureTotal) +"%\n"+
+              messageSoil + "\n\n" +
+
+              "Water Level: " + waterLevelValue + "\n" + 
+              messageLevel + "\n\n" +
+
+              "PH Level: " + phLevelValue + "\n" +
+              messagePH + "\n\n\n\n" +
+
               "We will notify you again in 30 minutes.",
             },{
               headers: {
@@ -207,8 +283,17 @@ const Mainpage = () => {
                                     textAlign='center'
                                     color='#000000'>
                                     {temp}
-                                    </Typography>
+                                </Typography>
+
                             </Stack>
+
+                            {/* <Typography
+                            variant="h6"
+                            textAlign='center'
+                            color='#000000'>
+                                {tempe}
+                            </Typography> */}
+
                         </Grid>
 
                     </Grid>
@@ -232,20 +317,14 @@ const Mainpage = () => {
                 >  
                     <Grid item xs={12} md={12}>
 
-                        <Stack
-                        direction="row"
-                        justifyContent="center"
-                        alignItems="center"
-                        spacing={2}> 
 
-                            <LandslideIcon fontSize="large" sx={{ color: '#000000' }}/>
-                            <Typography
+                         <Typography
                             variant="h6"
                             textAlign='center'
                             color='#000000'>
                             Soil Moisture
                             </Typography>
-                        </Stack>
+
                     </Grid>
                     <Grid item xs={12} md={12}>
                         <Stack
@@ -254,20 +333,21 @@ const Mainpage = () => {
                         alignItems="center"
                         spacing={2}>
                             
-
+                            <LandslideIcon fontSize="large" sx={{ color: '#000000' }}/>
+                           
                             <Typography
                             variant="h4"
                             textAlign='center'
                             color='#000000'>
-                            M1:{moisture_1}
+                            {String(moisture.moistureTotal) + "%"}
                             </Typography>
-
+{/* 
                             <Typography
                             variant="h4"
                             textAlign='center'
                             color='#000000'>
                             M2:{moisture_2}
-                            </Typography>
+                            </Typography> */}
                         </Stack>
                     </Grid>
 
