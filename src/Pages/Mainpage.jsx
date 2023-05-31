@@ -142,13 +142,20 @@ const Mainpage = () => {
         // soil moisture
         let messageSoil;
 
+        // kpaag between 0 - 50 yung value ng both soil moisture
         if (moistureTotal >= 0 && moistureTotal <= 50) {
             messageSoil = "The soil is dry due to low moisture levels.";
+        
+        // kpaag between 51 - 70 yung value ng both soil moisture
         } else if (moistureTotal >= 51 && moistureTotal <= 70) {
             messageSoil = "The soil moisture level is within the normal range.";
+
+        // kpaag between 71 - 100 yung value ng both soil moisture
         } else if (moistureTotal >= 71 && moistureTotal <= 100) {
             messageSoil = "The soil moisture level is within the normal range.";
         } else {
+
+        // inavlid
             messageSoil = "Invalid soil moisture level.";
         }
 
@@ -162,16 +169,15 @@ const Mainpage = () => {
         let Temp = parseInt(tempValue.replace("°C",""))
 
         let message = Temp >= 35
-            ? "The current Celsius temperature has reached"+ String(Temp)+", which may be too hot for your plants."
+            ? "The current Celsius temperature has reached "+ String(Temp)+", which may be too hot for your plants."
             : "The current Celsius temperature is below +" + String(Temp)+", which is within the suitable range for your plants.";
     
         setTempe(message)
 
         // water level
-        const waterLevel = 70; // Replace with actual water level percentage
+        const waterLevel = waterLevelValue; // Replace with actual water level percentage
 
         let messageLevel;
-
         if (waterLevel >= 91 && waterLevel <= 100) {
             messageLevel = "The water level is at a full tank.";
         } else if (waterLevel >= 61 && waterLevel <= 90) {
@@ -188,15 +194,19 @@ const Mainpage = () => {
 
         // PH level
         const messagePH =
-            phLevelValue === 4 ? "Too much acidity, add some water." :
-            phLevelValue === 7 ? "Too much alkaline, add some solution." :
+            // kpaag less than 4 yung ph value
+            phLevelValue < 4 ? "Too much acidity, add some water." :
+
+            // kpaag less than 7
+            phLevelValue > 7 ? "Too much alkaline, add some solution." :
             "pH level within acceptable range.";
         
         setPHm(messagePH)
 
         await axios.post(`https://api.telegram.org/bot${process.env.REACT_APP_BOT_TOKEN}/sendMessage`, {
               chat_id: process.env.REACT_APP_CHAT_ID_REY,
-              
+            //   chat_id: process.env.REACT_APP_CHAT_ID_MrRobot,
+
               text: "Strawberry: IoT with raspberry\n\n\n" + 
               "Temperature: "+ tempValue + "\n" +
               message + "\n\n" +
